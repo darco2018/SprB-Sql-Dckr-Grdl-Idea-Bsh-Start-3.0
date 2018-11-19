@@ -1,0 +1,63 @@
+
+//https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/html/#reacting-to-other-plugins
+// A typical Spring Boot project will apply these as a minimum
+apply plugin: 'java' // creates JAR, creates a BootRun task named bootRun, creates layout
+//  allows you to use a Maven bom to control your build’s dependencies
+apply plugin: 'io.spring.dependency-management' // import the spring-boot-dependencies bom
+//----------------------------------------------
+apply plugin: 'org.springframework.boot'
+// detects when certain other plugins are applied and reacts accordingly.
+//apply plugin: 'eclipse'
+// apply plugin: 'war' --> disables JAR, creates src/main/webapp
+/*The default behavior of the War task is to copy the content of src/main/webapp to the root of the archive.
+Your webapp directory may of course contain a WEB-INF sub-directory, which may contain a web.xml file.
+Your compiled classes are compiled to WEB-INF/classes. All the dependencies of the runtime [1] configuration
+are copied to WEB-INF/lib.
+ */
+// apply plugin: 'maven'
+apply plugin: 'idea'
+// Generates all IDEA configuration files
+apply plugin: 'com.palantir.docker'
+def javaVersion = JavaVersion.VERSION_1_8
+
+// war - the same
+// A custom Jar task that produces a Spring Boot executable jar.
+bootJar {
+    baseName = 'webapp'
+    version =  '2.0'
+}
+bootRun {
+    sourceResources sourceSets.main // application’s static resources are loaded from their source location
+    // This makes them reloadable in the live application which can be helpful at development time.
+}
+// unpack the fat jar file into build/dependency
+// tasks that want to use this task mus be later in the file
+
+springBoot {
+    mainClassName = 'pl.ust.app.Main'
+    buildInfo() // Spring Boot Actuator’s info endpoint automatically publishes information about your build in the presence of a META-INF/build-info.properties file.
+}
+// ./gradlew bootRun --args='--spring.profiles.active=dev' -->> To run your application without first building an archive use the bootRun task:
+// bootRun- Custom JavaExec task for running a Spring Boot application.
+// info on config and tasks: https://github.com/palantir/gradle-docker
+// docker - will build image
+// dockerPush - will push
+docker {
+    // image name
+    name "${project.group}/${bootJar.baseName}:${bootJar.version}"
+    // name 'hub.docker.com/${project.group}/${bootJar.baseName}'
+    // the location of the unpacked jarfile, which we could have hard coded in the Dockerfile
+    // test unpack must be earlier in the file
+    copySpec.from(tasks.unpack.outputs).into("dependency")
+    //a build argument for docker pointing to the jar file
+    buildArgs(['DEPENDENCY': "dependency"])
+    /* name 'hub.docker.com/username/my-app:version'
+    tags 'latest'
+    dockerfile file('Dockerfile')
+    files tasks.distTar.outputs, 'file1.txt', 'file2.txt'
+    buildArgs([BUILD_VERSION: 'version'])
+    labels(['key': 'value'])
+    pull true
+    noCache true
+    */
+}
