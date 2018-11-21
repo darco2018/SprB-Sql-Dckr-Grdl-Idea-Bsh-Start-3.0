@@ -46,14 +46,14 @@ docker {
     // image name
     name "${project.group}/${bootJar.baseName}:${bootJar.version}"
     // name 'hub.docker.com/${project.group}/${bootJar.baseName}'
-    // the location of the unpacked jarfile, which we could have hard coded in the Dockerfile
+    // the location of the unpacked jarfile, which we could have hard coded in the Dockerfile-for-scripts
     // test unpack must be earlier in the file
     copySpec.from(tasks.unpack.outputs).into("dependency")
     //a build argument for docker pointing to the jar file
     buildArgs(['DEPENDENCY': "dependency"])
     /* name 'hub.docker.com/username/my-app:version'
     tags 'latest'
-    dockerfile file('Dockerfile')
+    dockerfile file('Dockerfile-for-scripts')
     files tasks.distTar.outputs, 'file1.txt', 'file2.txt'
     buildArgs([BUILD_VERSION: 'version'])
     labels(['key': 'value'])

@@ -25,7 +25,6 @@ public class Main {
         return "Greetings from Gradle Spring Boot Application!";
     }
 
-
     @RequestMapping(value="/hello", method=RequestMethod.GET)
     public String hello(@RequestParam("name") String name) {
 

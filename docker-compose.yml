@@ -3,7 +3,7 @@ version: '3'
 services:
   db:
     # build:  .   <-- instead image:
-      # dockerfile: Dockerfile-alternate
+      # dockerfile: Dockerfile-for-scripts-alternate
     image: mysql:latest
     container_name: db
     environment:
